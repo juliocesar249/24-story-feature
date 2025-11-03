@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useAtomCallback } from "jotai/utils";
-import { Activity, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { listHeadAtom, storyAtomFamily } from "../../atoms/stories";
 import type { Story } from "../../atoms/types";
 import { StoryCircle } from "../StoryCircle";
