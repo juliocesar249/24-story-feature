@@ -1,31 +1,36 @@
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
+import { useAtomCallback } from "jotai/utils";
+import { Activity, useCallback, useEffect } from "react";
+import { listHeadAtom, storyAtomFamily } from "../../atoms/stories";
 import type { Story } from "../../atoms/types";
 import { StoryCircle } from "../StoryCircle";
-import { addToStoryData, removeLastFromStoryData, storiesList } from "../../atoms/stories";
-import { useEffect } from "react";
+import { StoriesRender } from "../StoriesRender";
 
-function generateStory(): Story {
+
+export function generateStory(): Story {
   return {
     id: Math.floor(Math.random() * 10 * 10 * 50),
-    data: String.fromCharCode(Number(`${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`))
+    data: Math.random().toString(36).substring(11),
+    previous: null,
+    next: null
   }
 }
 
 export function StoryList() {
 
-  const listOfStories = useAtomValue(storiesList);
-  const addStory = useSetAtom(addToStoryData);
-  const removeStory = useSetAtom(removeLastFromStoryData);
-  
-  function handleAddStory():void {
-    addStory(generateStory());
-  }
+  const headId = useAtomValue(listHeadAtom);
 
-  function handleDeleteStory(id:number):void {
-    removeStory(id);
-  }
-
-  useEffect(() => console.log(listOfStories), [listOfStories]);
+  const addNode = useAtomCallback(useCallback( (get, set) => {
+      const currentHeadId = get(listHeadAtom);
+      const newStory = generateStory();
+      if (currentHeadId !== null) {
+        const oldHeadData = get(storyAtomFamily(currentHeadId));
+        if (oldHeadData) set(storyAtomFamily(oldHeadData.id), { ...oldHeadData, previous: newStory.id });
+        newStory.next = currentHeadId;
+      }
+      set(storyAtomFamily(newStory.id), newStory);
+      set(listHeadAtom, newStory.id);
+    },[]));
 
   return (
     <article
@@ -42,10 +47,8 @@ export function StoryList() {
       gap-2"
         style={{ width: "clamp(340px, 20%, 400px)" }}>
         <div className="flex gap-2">
-          <StoryCircle first={true} data={""} onClick={handleAddStory} />
-          {
-           Object.values(listOfStories.nodes).map((story) => <StoryCircle key={story.id} data={story.data} onClick={() => handleDeleteStory(story.id)}/>)
-          }
+          <StoryCircle first={true} data={""} onClick={addNode} />
+          {headId && <StoriesRender />}
         </div>
       </section>
 

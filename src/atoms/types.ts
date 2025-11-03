@@ -1,8 +1,8 @@
 export type Story = {
   id: number;
   data: string;
-  next?: number;
-  previous?: number;
+  next: number | null;
+  previous: number | null;
 }
 
 export type StoryNodes = {
@@ -12,5 +12,5 @@ export type StoryNodes = {
 
 export type StoryList = {
   head: number;
-  nodes: { [key: string]: Story };
+  nodes: StoryNodes;
 }
